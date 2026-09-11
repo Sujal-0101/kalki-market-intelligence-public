@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Kalki Market Intelligence — The filing observatory</title>
+  <desc id="desc">An editorial ivory and indigo social card with the Kalki evidence observatory mark.</desc>
+  <defs>
+    <pattern id="paper" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r=".7" fill="#172554" opacity=".08"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#f3eddf"/>
+  <rect width="1200" height="630" fill="url(#paper)"/>
+  <rect width="360" height="630" fill="#172554"/>
+  <g transform="translate(72 72)">
+    <rect width="96" height="96" rx="7" fill="#172554" stroke="#687ab7"/>
+    <circle cx="48" cy="48" r="33" fill="none" stroke="#d8d1c3" stroke-width="2" opacity=".55"/>
+    <path d="M32 22v52M33 48l30-26M33 48l30 26" fill="none" stroke="#fffdf7" stroke-width="7"/>
+    <path d="M13 48h70" stroke="#2f5bea" stroke-width="2"/>
+    <circle cx="13" cy="48" r="4" fill="#f1a93b"/><circle cx="63" cy="22" r="4" fill="#18a875"/><circle cx="63" cy="74" r="4" fill="#ef6351"/>
+  </g>
+  <text x="72" y="222" fill="#fffdf7" font-family="Georgia,serif" font-size="50" font-weight="700">Kalki</text>
+  <text x="74" y="252" fill="#c6d1f3" font-family="monospace" font-size="14" letter-spacing="4">MARKET INTELLIGENCE</text>
+  <text x="72" y="526" fill="#9fb0e7" font-family="monospace" font-size="13" letter-spacing="2">SEC FILINGS · LOCAL ANALYSIS</text>
+  <text x="72" y="552" fill="#9fb0e7" font-family="monospace" font-size="13" letter-spacing="2">VALIDATED EXCERPTS · NO TRADES</text>
+  <g transform="translate(785 315)" fill="none">
+    <circle r="220" stroke="#8790a2" stroke-width="2"/>
+    <circle r="170" stroke="#b9b4a8" stroke-width="2"/>
+    <circle r="112" stroke="#2f5bea" stroke-dasharray="5 8"/>
+    <path d="M0-220V220M-220 0H220" stroke="#8790a2" opacity=".45"/>
+    <path d="M0 0L-54-209A216 216 0 0 1 0-220Z" fill="#2f5bea" opacity=".14" stroke="none"/>
+    <circle cx="112" cy="-96" r="9" fill="#965a00" stroke="#f3eddf" stroke-width="4"/>
+    <text x="130" y="-90" fill="#172554" font-family="monospace" font-size="14" font-weight="700">EVIDENCE</text>
+  </g>
+  <text x="414" y="206" fill="#2f5bea" font-family="monospace" font-size="14" font-weight="700" letter-spacing="3">THE PUBLIC RESEARCH DESK</text>
+  <text x="414" y="286" fill="#172554" font-family="Georgia,serif" font-size="67" font-weight="700">The filing</text>
+  <text x="414" y="356" fill="#2f5bea" font-family="Georgia,serif" font-size="67" font-style="italic">observatory.</text>
+  <text x="417" y="418" fill="#59667c" font-family="Arial,sans-serif" font-size="20">Evidence-led research with visible source and model lineage.</text>
+</svg>

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ brief.ticker or brief.cik }} intelligence dossier · Kalki{% endblock %}
+{% block content %}
+<article class="intelligence-dossier class-{{ brief.classification.value }}">
+  <nav class="dossier-breadcrumb" aria-label="Breadcrumb"><a href="/radar">Observatory</a><span>/</span><a href="/radar#register">Signal register</a><span>/</span><b>{{ brief.ticker or brief.cik }}</b></nav>
+
+  <header class="dossier-masthead">
+    <div class="dossier-monogram" aria-hidden="true"><span>{{ brief.ticker or "CIK" }}</span><i></i></div>
+    <div class="masthead-copy">
+      <p class="kicker">Intelligence dossier <span>{{ brief.filing_form }}</span></p>
+      <h1>{{ brief.company_name }}</h1>
+      <p class="dossier-reference">Reference {{ brief.accession_number }} · Published <time datetime="{{ brief.published_at.isoformat() }}">{{ brief.published_at.strftime('%d %B %Y · %H:%M UTC') }}</time></p>
+    </div>
+    <div class="signal-seal seal-{{ brief.classification.value }}"><span>Research class</span><strong>{{ brief.classification.value }}</strong><small>Not a trade instruction</small></div>
+  </header>
+
+  <section class="executive-signal" aria-labelledby="signal-title">
+    <div class="section-margin"><p class="folio">01</p><span>MODEL INTERPRETATION</span></div>
+    <div class="section-copy"><h2 id="signal-title">Executive signal</h2><p class="signal-summary">{% if brief.summary[:3] == "st " %}<i class="truncation-mark" title="This historical bounded output begins inside a word">[…]</i> {% endif %}{{ brief.summary }}{% if brief.summary[-2:] == " n" %} <i class="truncation-mark" title="This historical bounded output ends inside a word">[…]</i>{% endif %}</p><p class="signal-rationale">{{ brief.why_it_matters }}</p></div>
+    <aside><p><b>Interpretation layer</b>This text came from validated structured local-model output. It is not a verbatim source fact.</p></aside>
+  </section>
+
+  <section class="measure-folio" aria-labelledby="measure-title">
+    <header><p class="folio">02 / DETERMINISTIC MEASURES</p><h2 id="measure-title">Why it entered the register</h2><p>Ordinary code derives these research-priority points. They are neither confidence percentages nor return probabilities.</p></header>
+    <dl>
+      <div><dt>Attention</dt><dd><strong>{{ brief.attention_points }}</strong><span>/100</span></dd><meter min="0" max="100" value="{{ brief.attention_points }}">{{ brief.attention_points }}/100</meter><small>Opportunity-side language and validated findings</small></div>
+      <div><dt>Risk pressure</dt><dd><strong>{{ brief.risk_points }}</strong><span>/100</span></dd><meter min="0" max="100" value="{{ brief.risk_points }}">{{ brief.risk_points }}/100</meter><small>Risk terms and validated counter-findings</small></div>
+      <div><dt>Evidence strength</dt><dd><strong>{{ brief.evidence_strength_points }}</strong><span>/100</span></dd><meter min="0" max="100" value="{{ brief.evidence_strength_points }}">{{ brief.evidence_strength_points }}/100</meter><small>Validated roles and exact citations—not truth probability</small></div>
+    </dl>
+  </section>
+
+  <section class="evidence-folio" aria-labelledby="evidence-title">
+    <header><p class="folio">03 / SOURCE RECEIPTS</p><h2 id="evidence-title">Normalized filing evidence</h2><p>These quotations are exact matches to Kalki's whitespace-normalized deterministic excerpt. Open the complete SEC submission for original formatting and surrounding context.</p></header>
+    <div class="evidence-layout">
+      <ol class="evidence-timeline">
+        {% for item in brief.evidence %}
+        <li>
+          <span class="evidence-node" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
+          <figure>
+            <figcaption><b>Extracted evidence</b><time datetime="{{ item.retrieved_at.isoformat() }}">Retrieved {{ item.retrieved_at.strftime('%d %b %Y · %H:%M UTC') }}</time></figcaption>
+            <blockquote>{% if item.quote[:3] == "st " %}<i class="truncation-mark" title="This historical bounded excerpt begins inside a word">[…]</i> {% endif %}“{{ item.quote }}”{% if item.quote[-2:] == " n" %} <i class="truncation-mark" title="This historical bounded excerpt ends inside a word">[…]</i>{% endif %}</blockquote>
+            <dl><div><dt>Excerpt digest</dt><dd><code>{{ item.excerpt_sha256[:16] }}…</code></dd></div><div><dt>Source digest</dt><dd><code>{{ item.source_document_sha256[:16] }}…</code></dd></div></dl>
+          </figure>
+        </li>
+        {% endfor %}
+      </ol>
+      <aside class="source-receipt">
+        <p class="receipt-label">Authoritative source</p>
+        <strong>U.S. SEC / EDGAR</strong>
+        <dl>
+          <div><dt>Form</dt><dd>{{ brief.filing_form }}</dd></div>
+          <div><dt>Filed</dt><dd><time datetime="{{ brief.filed_at.isoformat() }}">{{ brief.filed_at.strftime('%d %b %Y') }}</time></dd></div>
+          <div><dt>CIK</dt><dd>{{ brief.cik }}</dd></div>
+          <div><dt>Exchange</dt><dd>{{ brief.exchange or "Not supplied" }}</dd></div>
+          <div><dt>Accession</dt><dd>{{ brief.accession_number }}</dd></div>
+        </dl>
+        {% if sec_links %}
+        <a class="source-action" href="{{ sec_links.primary_document_url }}" rel="external nofollow noopener">Open validated primary document <span aria-hidden="true">↗</span></a>
+        <p><a href="{{ sec_links.archive_index_url }}" rel="external nofollow noopener">SEC filing index</a> · <a href="{{ sec_links.complete_submission_url }}" rel="external nofollow noopener">Complete submission</a>{% if sec_links.inline_xbrl_url %} · <a href="{{ sec_links.inline_xbrl_url }}" rel="external nofollow noopener">Inline XBRL viewer</a>{% endif %}</p>
+        {% else %}
+        <a class="source-action" href="{{ brief.source_url }}" rel="external nofollow">Open historical complete SEC submission <span aria-hidden="true">↗</span></a>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+
+  {% if brief.numeric_verifications %}
+  <section class="verification-folio" aria-labelledby="verification-title">
+    <header><p class="folio">03A / CLAIM CHECKS</p><h2 id="verification-title">Deterministic claim checks</h2><p>Numbers shown in the analyst interpretation were checked against independently extracted source values. These are verification outcomes, not model confidence.</p></header>
+    <ol class="verification-ledger">
+      {% for check in brief.numeric_verifications %}
+      <li>
+        <span class="verification-status status-{{ check.status.value }}">{{ check.status.value|replace('_', ' ') }}</span>
+        <code>{{ check.claim_id }}</code>
+        <span class="verification-note">{{ check.note }}</span>
+        <small>Evidence {{ check.evidence_id }} · calculation {{ check.calculation_version }}</small>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
+  <section class="lineage-section" aria-labelledby="lineage-title">
+    <header><p class="folio">04 / LINEAGE</p><h2 id="lineage-title">A timed chain of custody</h2></header>
+    <ol class="custody-line">
+      <li><span>Filed</span><b>{{ brief.filed_at.strftime('%d %b %Y') }}</b><small>SEC filing date</small></li>
+      <li><span>Retrieved</span><b>{{ brief.retrieved_at.strftime('%H:%M:%S UTC') }}</b><small>{{ brief.retrieved_at.strftime('%d %b %Y') }}</small></li>
+      <li><span>{% if brief.verification %}Independently verified{% else %}Validated{% endif %}</span><b>{{ brief.prompt_version }}</b><small>{% if brief.verification %}{{ brief.verification.verifier_prompt_version }}{% else %}Pre-verifier publication{% endif %}</small></li>
+      <li><span>Published</span><b>{{ brief.published_at.strftime('%H:%M:%S UTC') }}</b><small>Immutable brief</small></li>
+    </ol>
+    <div class="model-receipt"><span>Primary analyst</span><b>{{ brief.model_name }}</b><code>{{ brief.model_digest }}</code>{% if brief.verification %}<span>Independent verifier · {{ brief.verification.status }}</span><b>{{ brief.verification.verifier_model_name }}</b><code>{{ brief.verification.verifier_model_digest }}</code><small>Deterministic validation remained final authority · analyst retries {{ brief.verification.analyst_retry_count }}</small>{% else %}<small>This historical dossier predates independent local-model verification.</small>{% endif %}</div>
+  </section>
+
+  <section class="limitations-folio" aria-labelledby="limits-title">
+    <div><p class="folio">05 / BOUNDARIES</p><h2 id="limits-title">What this dossier cannot tell you</h2></div>
+    <ul>{% for item in brief.limitations %}<li>{{ item }}</li>{% endfor %}</ul>
+  </section>
+  <p class="dossier-disclosure" role="note"><b>Research boundary</b>{{ brief.disclaimer }}</p>
+</article>
+{% endblock %}

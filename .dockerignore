@@ -1,0 +1,14 @@
+.git
+.venv
+.env
+.env.*
+backups
+data
+dist
+logs
+models
+raw-data
+secrets
+tmp
+__pycache__
+*.pyc

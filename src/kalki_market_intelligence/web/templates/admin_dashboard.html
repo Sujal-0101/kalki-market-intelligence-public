@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Admin workspace · Kalki{% endblock %}
+{% block content %}
+<section class="admin-header">
+  <div><p class="eyebrow">Authenticated workspace</p><h1>Research administration</h1><p>Signed in as <strong>{{ session.username }}</strong>. Publication records remain immutable.</p></div>
+  <form method="post" action="/admin/logout"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button class="secondary" type="submit">Sign out</button></form>
+</section>
+<section aria-labelledby="admin-publications-title">
+  <h2 id="admin-publications-title">Published records</h2>
+  {% if publications %}
+  <ul class="record-list">{% for item in publications %}<li><a href="/admin/research/{{ item.prediction_id }}">{{ item.prediction_id }}</a><span>{{ item.label.value }} · {{ item.risk_profile.value|replace('_', ' ') }}</span></li>{% endfor %}</ul>
+  {% else %}<p class="empty-inline">No validated publications are available. The interface does not invent placeholders.</p>{% endif %}
+</section>
+<section aria-labelledby="audit-title">
+  <h2 id="audit-title">Recent security audit</h2>
+  <div class="table-scroll" tabindex="0" aria-label="Scrollable security audit table">
+    <table><thead><tr><th scope="col">UTC time</th><th scope="col">Event</th><th scope="col">Actor</th><th scope="col">Detail</th></tr></thead><tbody>{% for event in audit_events %}<tr><td>{{ event.occurred_at.isoformat() }}</td><td>{{ event.event_type.value }}</td><td>{{ event.actor or 'anonymous' }}</td><td>{{ event.detail }}</td></tr>{% endfor %}</tbody></table>
+  </div>
+</section>
+{% endblock %}

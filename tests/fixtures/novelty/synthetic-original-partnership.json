@@ -1,0 +1,14 @@
+{
+  "fixture_scope": "fully synthetic first-disclosure fixture; no issuer prose, real filing, or live URL",
+  "issuer_cik": "0000000001",
+  "issuer_name": "Example Compute Corp",
+  "source_class": "company_ir",
+  "publisher": "Example Compute Corp (synthetic)",
+  "canonical_url": "https://example.invalid/news/original-partnership",
+  "source_content_sha256": "fedebb3418922d8049f9e4c8155728dd369d3e880130f44bac0d88b3c454bf77",
+  "published_at": null,
+  "available_at": null,
+  "retrieved_at": "2026-08-30T09:45:53Z",
+  "supported_event_dates": ["2026-08-10"],
+  "excerpt": "Example Compute Corp announced strategic partnerships with Alder Capital, Beacon Partners and Cedar Infrastructure to establish independent compute financing platforms and mobilize over $500 billion of third-party capital."
+}

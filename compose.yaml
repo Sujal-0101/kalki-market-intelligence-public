@@ -1,0 +1,17 @@
+services:
+  postgres-test:
+    image: postgres:18.0-alpine3.22
+    profiles: [integration]
+    network_mode: none
+    environment:
+      POSTGRES_DB: kalki_test
+      POSTGRES_HOST_AUTH_METHOD: trust
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d kalki_test]
+      interval: 1s
+      timeout: 3s
+      retries: 30

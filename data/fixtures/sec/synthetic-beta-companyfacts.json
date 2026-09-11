@@ -1,0 +1,26 @@
+{
+  "_fixture_notice": "Synthetic schema fixture; values are invented solely for tests.",
+  "cik": "2",
+  "entityName": "Synthetic Beta Holdings",
+  "facts": {
+    "dei": {
+      "EntityCommonStockSharesOutstanding": {
+        "label": "Entity Common Stock, Shares Outstanding",
+        "description": "Synthetic share count fixture value.",
+        "units": {
+          "shares": [
+            {
+              "end": "2026-03-19",
+              "val": 7500000,
+              "accn": "0000000002-26-000001",
+              "fy": 2026,
+              "fp": "Q1",
+              "form": "8-K",
+              "filed": "2026-03-20"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}The filing observatory · Kalki{% endblock %}
+{% block content %}
+<section class="observatory-hero{% if snapshot %} state-{{ snapshot.state.value }}{% else %} state-starting{% endif %}" aria-labelledby="page-title">
+  <div class="hero-editorial">
+    <p class="kicker">Evidence-led filing research <span>Issue 01</span></p>
+    <h1 id="page-title">The filing<br><em>observatory.</em></h1>
+    <p class="hero-deck">Kalki reads new public-company filings, isolates consequential language, and publishes only what survives source and quotation checks.</p>
+    <div class="hero-note">
+      <span aria-hidden="true">↳</span>
+      <p>This is a research-priority desk, not a price feed. The instrument shows system activity and published dossiers—never simulated market movement.</p>
+    </div>
+    <a class="primary-action" href="#register">Read the signal register <span aria-hidden="true">↓</span></a>
+  </div>
+
+  <figure class="observatory-figure">
+    <div class="instrument" role="group" aria-label="Kalki filing observatory. Labelled points are links to real published briefs; position is decorative and does not encode market value.">
+      <div class="instrument-grid" aria-hidden="true"></div>
+      <div class="instrument-sweep" aria-hidden="true"></div>
+      <div class="instrument-axis instrument-axis-x" aria-hidden="true"></div>
+      <div class="instrument-axis instrument-axis-y" aria-hidden="true"></div>
+      <div class="instrument-core">
+        <img src="{{ url_for('static', path='/kalki-mark.svg') }}" width="54" height="54" alt="">
+        <span>{{ snapshot.state.value|replace('_', ' ') if snapshot else "starting" }}</span>
+      </div>
+      {% for brief in briefs[:12] %}
+      <a class="instrument-blip blip-{{ loop.index }} class-{{ brief.classification.value }}" href="/radar/{{ brief.brief_id }}" aria-label="Open real {{ brief.ticker or brief.company_name }} {{ brief.classification.value }} dossier">
+        <i aria-hidden="true"></i><b>{{ brief.ticker or "CIK" }}</b>
+      </a>
+      {% endfor %}
+      {% if not briefs %}<p class="calibration-field">Calibration field<br><small>No published security blips</small></p>{% endif %}
+      <span class="instrument-bearing bearing-n" aria-hidden="true">N / SEC</span>
+      <span class="instrument-bearing bearing-e" aria-hidden="true">E / VALIDATE</span>
+      <span class="instrument-bearing bearing-s" aria-hidden="true">S / PUBLISH</span>
+      <span class="instrument-bearing bearing-w" aria-hidden="true">W / EXTRACT</span>
+    </div>
+    <figcaption><b>Instrument key</b> Labelled blips are real publications; color is classification. Sweep, angle, and distance are non-quantitative system ornament.</figcaption>
+  </figure>
+</section>
+
+<section class="system-pulse" aria-labelledby="pulse-title" aria-live="polite">
+  <header>
+    <p class="folio">00 / SYSTEM PULSE</p>
+    <h2 id="pulse-title">Public operating state</h2>
+    <span class="state-chip chip-{{ snapshot.state.value if snapshot else 'starting' }}"><i aria-hidden="true"></i>{{ snapshot.state.value|replace('_', ' ') if snapshot else "starting" }}</span>
+  </header>
+  {% if snapshot %}
+  <dl class="pulse-readings">
+    <div><dt>Last heartbeat</dt><dd><time datetime="{{ snapshot.heartbeat_at.isoformat() }}">{{ snapshot.heartbeat_at.strftime('%H:%M:%S') }}</time><small>UTC</small></dd></div>
+    <div><dt>Last successful poll</dt><dd>{% if snapshot.last_success_at %}<time datetime="{{ snapshot.last_success_at.isoformat() }}">{{ snapshot.last_success_at.strftime('%d %b · %H:%M') }}</time>{% else %}Not yet{% endif %}</dd></div>
+    <div><dt>Research queue</dt><dd>{{ snapshot.pending_count }}<small>filings</small></dd></div>
+    <div><dt>Published</dt><dd>{{ snapshot.published_count }}<small>dossiers</small></dd></div>
+    <div><dt>Latest publication</dt><dd class="reading-text">{% if briefs %}<a href="/radar/{{ briefs[0].brief_id }}">{{ briefs[0].ticker or briefs[0].company_name }}</a><small>{{ briefs[0].published_at.strftime('%H:%M UTC') }}</small>{% else %}None yet{% endif %}</dd></div>
+    <div><dt>Local model</dt><dd class="reading-text">{{ snapshot.model_name }}</dd></div>
+    <div><dt>Independent review</dt><dd class="reading-text">{% if snapshot.verifier_enabled %}{{ snapshot.verifier_approvals }} passed<small>{{ snapshot.verifier_reviews }} completed · {{ snapshot.verifier_model_name }}</small>{% else %}Not enabled<small>No verification claim</small>{% endif %}</dd></div>
+    <div><dt>Discord delivery</dt><dd class="reading-text">{{ "armed" if snapshot.discord_enabled else "disabled" }}</dd></div>
+  </dl>
+  {% if snapshot.last_error_code %}<p class="operating-notice"><b>Degraded state:</b> {{ snapshot.last_error_code|replace('_', ' ') }}. No failed analysis is published.</p>{% endif %}
+  {% else %}<p class="operating-notice">Waiting for the first public-safe worker heartbeat. No health claim is being made.</p>{% endif %}
+</section>
+
+<section class="signal-register" id="register" aria-labelledby="register-title">
+  <header class="register-heading">
+    <div><p class="folio">01 / SIGNAL REGISTER</p><h2 id="register-title">Validated dossiers</h2></div>
+    <p>Filed facts, bounded interpretation, and limitations—kept together.</p>
+  </header>
+  <form class="register-filter" method="get" action="/radar">
+    <label><span>Company or ticker</span><input type="search" name="query" value="{{ query }}" maxlength="64" placeholder="Search the register"></label>
+    <label><span>Classification</span><select name="classification">
+      <option value="">All classifications</option>
+      {% for option in classifications %}<option value="{{ option.value }}"{% if selected_classification == option %} selected{% endif %}>{{ option.value|title }}</option>{% endfor %}
+    </select></label>
+    <button type="submit">Apply</button>
+  </form>
+
+  {% if briefs %}
+  <ol class="dossier-register">
+    {% for brief in briefs %}
+    <li>
+      <article class="register-entry class-{{ brief.classification.value }}">
+        <div class="entry-index"><span>{{ "%02d"|format(loop.index + ((page - 1) * 24)) }}</span><b>{{ brief.ticker or "CIK" }}</b></div>
+        <div class="entry-body">
+          <div class="entry-meta"><span class="classification-label">{{ brief.classification.value }}</span><span>{{ brief.filing_form }}</span><span>{{ brief.exchange or "SEC listed" }}</span><time datetime="{{ brief.published_at.isoformat() }}">Published {{ brief.published_at.strftime('%d %b %Y · %H:%M UTC') }}</time></div>
+          <h3><a href="/radar/{{ brief.brief_id }}">{{ brief.company_name }}</a></h3>
+          <p class="entry-thesis"><span>Model interpretation</span>{% if brief.summary[:3] == "st " %}<i class="truncation-mark" title="This historical bounded output begins inside a word">[…]</i> {% endif %}{{ brief.summary }}{% if brief.summary[-2:] == " n" %} <i class="truncation-mark" title="This historical bounded output ends inside a word">[…]</i>{% endif %}</p>
+          {% if brief.evidence %}<blockquote><span>Normalized source excerpt</span>{% if brief.evidence[0].quote[:3] == "st " %}<i class="truncation-mark" title="This historical bounded excerpt begins inside a word">[…]</i> {% endif %}“{{ brief.evidence[0].quote }}”{% if brief.evidence[0].quote[-2:] == " n" %} <i class="truncation-mark" title="This historical bounded excerpt ends inside a word">[…]</i>{% endif %}</blockquote>{% endif %}
+        </div>
+        <dl class="entry-measures" aria-label="Deterministic research-priority measures">
+          <div><dt>Attention</dt><dd>{{ brief.attention_points }}</dd><meter min="0" max="100" value="{{ brief.attention_points }}">{{ brief.attention_points }}/100</meter></div>
+          <div><dt>Risk</dt><dd>{{ brief.risk_points }}</dd><meter min="0" max="100" value="{{ brief.risk_points }}">{{ brief.risk_points }}/100</meter></div>
+          <div><dt>Evidence</dt><dd>{{ brief.evidence_strength_points }}</dd><meter min="0" max="100" value="{{ brief.evidence_strength_points }}">{{ brief.evidence_strength_points }}/100</meter></div>
+          <a href="/radar/{{ brief.brief_id }}" aria-label="Open {{ brief.company_name }} intelligence dossier">Open dossier <span aria-hidden="true">↗</span></a>
+        </dl>
+      </article>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <div class="quiet-state">
+    <div class="quiet-instrument" aria-hidden="true"><i></i><i></i><span></span></div>
+    <div><p class="folio">QUIET FIELD</p><h3>No validated dossier matches this view.</h3><p>Kalki does not manufacture activity. The observatory remains calibrated while it waits for a filing to clear every evidence gate.</p></div>
+  </div>
+  {% endif %}
+
+  {% if page > 1 or has_older %}
+  <nav class="pagination" aria-label="Radar pages">
+    {% if page > 1 %}<a href="/radar?page={{ page - 1 }}{% if query %}&amp;query={{ query|urlencode }}{% endif %}{% if selected_classification %}&amp;classification={{ selected_classification.value }}{% endif %}">← Newer</a>{% endif %}
+    <span>Register page {{ page }}</span>
+    {% if has_older %}<a href="/radar?page={{ page + 1 }}{% if query %}&amp;query={{ query|urlencode }}{% endif %}{% if selected_classification %}&amp;classification={{ selected_classification.value }}{% endif %}">Older →</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+
+<section class="method-story" id="method" aria-labelledby="method-title">
+  <header><p class="folio">02 / EVIDENCE LINE</p><h2 id="method-title">From filing to public record</h2><p>The model interprets a bounded excerpt. It never selects its own source, calculates a return, or gains a tool.</p></header>
+  <ol class="pipeline-line">
+    <li><span>01</span><i aria-hidden="true">SEC</i><h3>Discover</h3><details><summary>Inspect boundary</summary><p>Identified, rate-limited retrieval from official EDGAR daily indexes and archive paths.</p></details></li>
+    <li><span>02</span><i aria-hidden="true">TXT</i><h3>Extract</h3><details><summary>Inspect boundary</summary><p>Deterministic code removes non-visible markup and selects bounded catalyst/risk windows.</p></details></li>
+    <li><span>03</span><i aria-hidden="true">LLM</i><h3>Interpret</h3><details><summary>Inspect boundary</summary><p>A private local model receives no tools and must return a closed structured schema.</p></details></li>
+    <li><span>04</span><i aria-hidden="true">✓</i><h3>Validate</h3><details><summary>Inspect boundary</summary><p>Ordinary code checks evidence IDs, quotations, figures, URLs, categories, and UTC cutoff.</p></details></li>
+    <li><span>05</span><i aria-hidden="true">DB</i><h3>Publish</h3><details><summary>Inspect boundary</summary><p>Accepted dossiers retain hashes and lineage in an append-only PostgreSQL record.</p></details></li>
+    <li><span>06</span><i aria-hidden="true">↗</i><h3>Distribute</h3><details><summary>Inspect boundary</summary><p>The public site and deduplicated Discord notice share the same immutable brief. No brokerage path exists.</p></details></li>
+  </ol>
+</section>
+
+<section class="activity-ledger" aria-labelledby="activity-title">
+  <header><p class="folio">03 / RECENT PUBLIC ACTIVITY</p><h2 id="activity-title">What actually happened</h2></header>
+  {% if briefs %}<ol>{% for brief in briefs[:6] %}<li><time datetime="{{ brief.published_at.isoformat() }}">{{ brief.published_at.strftime('%d %b %Y · %H:%M UTC') }}</time><span>Published dossier</span><a href="/radar/{{ brief.brief_id }}">{{ brief.ticker or brief.company_name }} / {{ brief.filing_form }}</a><small>{{ brief.classification.value }}</small></li>{% endfor %}</ol>
+  {% else %}<p>No public activity is available for this filtered view.</p>{% endif %}
+</section>
+{% endblock %}

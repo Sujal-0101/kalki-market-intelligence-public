@@ -1,0 +1,39 @@
+{
+  "schema_version": "1",
+  "access_mode": "licensed_distribution",
+  "rights": {
+    "agreement_reference": "SYNTHETIC-TEST-GRANT-NOT-A-REAL-LICENSE",
+    "automated_processing_allowed": true,
+    "database_storage_allowed": true,
+    "public_redistribution_allowed": false,
+    "expires_on": "2030-12-31"
+  },
+  "issuer": {
+    "provider_profile_id": "SYNTHETIC-CA-PROFILE-0001",
+    "legal_name": "Synthetic Maple Research Corporation",
+    "lei": "SYNTHETICLEI00000057",
+    "reporting_jurisdictions": ["ON", "BC", "AB"],
+    "listings": [
+      {
+        "symbol": "SMPL",
+        "exchange_name": "Synthetic Exchange"
+      },
+      {
+        "symbol": "SMPL.X",
+        "exchange_name": "Synthetic Venture Exchange"
+      }
+    ]
+  },
+  "provider_document_id": "SYNTHETIC-CA-DOCUMENT-0001",
+  "filing_category": "Continuous disclosure",
+  "document_type": "Synthetic annual financial statements",
+  "title": "Synthetic test document — not a real filing",
+  "filed_at": "2026-03-31T16:15:00-04:00",
+  "became_public_at": "2026-03-31T16:16:00-04:00",
+  "language": "en",
+  "media_type": "application/pdf",
+  "byte_length": 12345,
+  "content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "source_record_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "authorized_locator": null
+}

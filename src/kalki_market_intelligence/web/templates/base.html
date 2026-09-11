@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#f3eddf">
+    <meta name="description" content="Evidence-led public-company filing research with visible source and model lineage.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Kalki Market Intelligence">
+    <meta property="og:title" content="Kalki · The filing observatory">
+    <meta property="og:description" content="Evidence-led public-company filing research with visible source and model lineage.">
+    <meta property="og:url" content="{{ request.base_url }}radar">
+    <meta property="og:image" content="{{ request.url_for('static', path='/social-card.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Kalki · The filing observatory">
+    <meta name="twitter:description" content="Evidence-led public-company filing research with visible source and model lineage.">
+    <meta name="twitter:image" content="{{ request.url_for('static', path='/social-card.png') }}">
+    <title>{% block title %}Kalki Market Intelligence{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', path='/favicon.svg') }}" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}?v=phase16-observatory-3">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="brand" href="/radar" aria-label="Kalki Market Intelligence home">
+        <img src="{{ url_for('static', path='/kalki-mark.svg') }}" width="48" height="48" alt="">
+        <span class="brand-type"><strong>Kalki</strong><small>Market Intelligence</small></span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/radar">Observatory</a>
+        <a href="/radar#register">Signal register</a>
+        <a href="/radar#method">Method</a>
+        <a href="/research">Research library</a>
+        <a href="/screened">Screened filings</a>
+      </nav>
+      <p class="edition-mark" aria-label="Kalki public research edition"><span>Public research</span><b>UTC / 01</b></p>
+    </header>
+    <div class="provenance-bar" aria-label="Research boundaries">
+      <span>SEC filings</span><span>Local analysis</span><span>Validated excerpts</span><span>No trade execution</span>
+    </div>
+    <main id="main-content" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <img src="{{ url_for('static', path='/kalki-mark.svg') }}" width="40" height="40" alt="">
+        <div><strong>Kalki Market Intelligence</strong><p>Evidence-led filing research. Uncertainty stays visible.</p></div>
+      </div>
+      <dl>
+        <div><dt>Execution</dt><dd>None</dd></div>
+        <div><dt>Time</dt><dd>UTC</dd></div>
+        <div><dt>Records</dt><dd>Append-only</dd></div>
+      </dl>
+      <p class="footer-disclosure">Research only. No brokerage connection, price promise, probability of return, or instruction to trade.</p>
+    </footer>
+  </body>
+</html>

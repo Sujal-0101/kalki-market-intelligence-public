@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "description": "Wholly synthetic Phase 8 scoring cases; not market evidence or investment research.",
+  "cases": [
+    {
+      "name": "strong_conservative",
+      "metrics": {
+        "cumulative_price_return": "0.22",
+        "benchmark_relative_return": "0.12",
+        "period_over_period_growth": "0.30",
+        "gross_margin": "0.45",
+        "price_to_earnings_ratio": "14",
+        "relative_strength_index": "60",
+        "annualized_historical_volatility": "0.20",
+        "maximum_drawdown": "-0.12",
+        "debt_to_equity_ratio": "0.40"
+      },
+      "findings": [
+        ["catalyst_analyst", "catalyst", "official_release"],
+        ["bull_bear_risk_analyst", "bull_case", "company_ir"]
+      ],
+      "expected": [78, 13, 82, "Strong opportunity", "conservative"]
+    },
+    {
+      "name": "high_opportunity_high_risk",
+      "metrics": {
+        "cumulative_price_return": "0.35",
+        "benchmark_relative_return": "0.18",
+        "period_over_period_growth": "0.40",
+        "gross_margin": "0.30",
+        "price_to_earnings_ratio": "40",
+        "relative_strength_index": "78",
+        "annualized_historical_volatility": "0.75",
+        "maximum_drawdown": "-0.55",
+        "debt_to_equity_ratio": "2.50"
+      },
+      "findings": [
+        ["catalyst_analyst", "catalyst", "official_release"],
+        ["bull_bear_risk_analyst", "risk", "company_ir"]
+      ],
+      "expected": [68, 80, 82, "Speculative opportunity", "aggressive_speculative"]
+    },
+    {
+      "name": "weak_elevated_risk",
+      "metrics": {
+        "cumulative_price_return": "-0.10",
+        "benchmark_relative_return": "-0.05",
+        "period_over_period_growth": "0.03",
+        "gross_margin": "0.15",
+        "price_to_earnings_ratio": "55",
+        "relative_strength_index": "35",
+        "annualized_historical_volatility": "0.35",
+        "maximum_drawdown": "-0.25",
+        "debt_to_equity_ratio": "0.70"
+      },
+      "findings": [
+        ["bull_bear_risk_analyst", "risk", "company_ir"]
+      ],
+      "expected": [12, 42, 76, "Weak opportunity", "elevated_risk"]
+    },
+    {
+      "name": "critical_inputs_missing",
+      "metrics": {"cumulative_price_return": "0.20"},
+      "findings": [],
+      "expected": [18, 0, 10, "Insufficient evidence", "unclassified"]
+    }
+  ]
+}

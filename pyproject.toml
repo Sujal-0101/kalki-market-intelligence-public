@@ -1,0 +1,79 @@
+[build-system]
+requires = ["editables==0.6", "hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kalki-market-intelligence"
+version = "0.1.0"
+description = "Local-first, evidence-backed market research foundations"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12,<4"
+dependencies = [
+  "argon2-cffi==25.1.0",
+  "fastapi==0.141.1",
+  "jinja2==3.1.6",
+  "pydantic==2.13.4",
+  "pydantic-settings==2.15.0",
+  "python-multipart==0.0.32",
+  "psycopg[binary,pool]==3.3.4",
+  "uvicorn==0.52.4",
+  "discord.py==2.6.4",
+  "exchange-calendars==4.13.2",
+]
+
+[project.scripts]
+kalki-benchmark-ollama = "kalki_market_intelligence.benchmarking.ollama:main"
+kalki-benchmark-sec-models = "kalki_market_intelligence.benchmarking.sec_models:main"
+kalki-model-serving-lab = "kalki_market_intelligence.benchmarking.serving_lab:main"
+kalki-consolidation-lab = "kalki_market_intelligence.benchmarking.consolidation_lab:main"
+kalki-filing-change-lab = "kalki_market_intelligence.benchmarking.filing_change_lab:main"
+kalki-observe-model-serving = "kalki_market_intelligence.benchmarking.resource_observation:main"
+kalki-qualify-verifier = "kalki_market_intelligence.benchmarking.verifier_qualification:main"
+kalki-evaluate-analyst = "kalki_market_intelligence.analysis.evaluation:main"
+kalki-ingest-sec = "kalki_market_intelligence.providers.sec.cli:main"
+kalki-test-discord = "kalki_market_intelligence.notifications.cli:main"
+kalki-hash-admin-password = "kalki_market_intelligence.web.cli:hash_password_main"
+kalki-serve-local = "kalki_market_intelligence.web.cli:serve_main"
+kalki-serve-admin = "kalki_market_intelligence.web.cli:serve_admin_main"
+kalki-serve-public = "kalki_market_intelligence.web.cli:serve_public_main"
+kalki-backtest = "kalki_market_intelligence.backtesting.cli:main"
+kalki-research-worker = "kalki_market_intelligence.radar.worker:worker_main"
+kalki-ownership-worker = "kalki_market_intelligence.radar.ownership_worker:ownership_worker_main"
+kalki-financing-worker = "kalki_market_intelligence.radar.financing_worker:financing_worker_main"
+kalki-accounting-worker = "kalki_market_intelligence.radar.accounting_worker:accounting_worker_main"
+kalki-discord-intake = "kalki_market_intelligence.research.discord_listener:main"
+kalki-prospective-outcome-worker = "kalki_market_intelligence.prospective.worker:prospective_worker_main"
+
+[project.optional-dependencies]
+dev = [
+  "httpx2==2.12.0",
+  "mypy==2.3.1",
+  "pytest==9.1.1",
+  "ruff==0.16.4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kalki_market_intelligence"]
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests", "scripts/benchmark-phase14.py"]
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true

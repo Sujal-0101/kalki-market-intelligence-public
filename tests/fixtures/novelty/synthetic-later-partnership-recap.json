@@ -1,0 +1,15 @@
+{
+  "fixture_scope": "fully synthetic SEC-shaped later-disclosure fixture; no issuer prose, real filing, or live URL",
+  "issuer_cik": "0000000001",
+  "issuer_name": "Example Compute Corp",
+  "source_class": "sec",
+  "publisher": "Synthetic SEC-shaped test source (not SEC data)",
+  "canonical_url": "https://example.invalid/filings/later-partnership-recap",
+  "accession_number": "0000000001-26-000001",
+  "source_content_sha256": "8333f4f1eab215cb78ac1629ea6fb28fd14909cc29b43ba509c364f00ac224a5",
+  "published_at": "2026-08-26T16:21:19Z",
+  "available_at": "2026-08-26T16:21:19Z",
+  "retrieved_at": "2026-08-30T09:45:53Z",
+  "supported_event_dates": ["2026-08-10"],
+  "excerpt": "Example Compute Corp later described strategic partnerships with Alder Capital, Beacon Partners and Cedar Infrastructure to establish independent compute financing platforms and mobilize over $500 billion of third-party capital, subject to definitive agreements."
+}

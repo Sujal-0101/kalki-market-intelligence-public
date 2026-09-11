@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Admin record {{ prediction.prediction_id }} · Kalki{% endblock %}
+{% block content %}
+<article class="detail-shell">
+  <a class="back-link" href="/admin">← Admin workspace</a>
+  <p class="eyebrow">Immutable publication record</p>
+  <h1>{{ prediction.prediction_id }}</h1>
+  <p class="disclosure" role="note">Viewing only. Corrections and outcomes append separately; this record cannot be edited.</p>
+  <section aria-labelledby="admin-record-title"><h2 id="admin-record-title">Validated snapshot</h2><pre class="record-json">{{ prediction.model_dump_json(indent=2) }}</pre></section>
+</article>
+{% endblock %}

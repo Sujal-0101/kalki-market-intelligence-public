@@ -1,0 +1,6 @@
+# Internal engineering/production evidence remains in the private repository but is
+# intentionally absent from clean public archives.
+.agent export-ignore
+docs/PROGRESS.md export-ignore
+docs/PRODUCTION_AUDIT_2026-08-27.md export-ignore
+tests/test_supervisor_quota.py export-ignore

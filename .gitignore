@@ -1,0 +1,89 @@
+# Environment variables and secrets
+.env
+secrets/discord_intake_bot_token
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+.next/
+.nuxt/
+.svelte-kit/
+coverage/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs and runtime state
+*.log
+logs/
+*.pid
+*.sock
+
+# Local databases and coverage
+*.db
+*.sqlite
+*.sqlite3
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Temporary files
+tmp/
+temp/
+.cache/
+*.tmp
+
+# Downloaded models and research data
+models/
+raw-data/
+
+# Backups and exports
+backups/
+exports/
+*.bak
+*.backup
+*.dump
+*.dump.gz
+*.sql.gz
+*.sql.zst
+
+# Ignore local research artifacts by default. Keep only documentation,
+# placeholders, and lightweight test fixtures eligible for version control.
+data/*
+!data/README.md
+!data/.gitkeep
+!data/fixtures/
+!data/fixtures/**

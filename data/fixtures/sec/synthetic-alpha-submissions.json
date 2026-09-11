@@ -1,0 +1,33 @@
+{
+  "_fixture_notice": "Synthetic schema fixture; not an SEC filing or real issuer.",
+  "cik": "0000000001",
+  "name": "Synthetic Alpha Corporation",
+  "sic": "3571",
+  "sicDescription": "Synthetic Computing Equipment",
+  "entityType": "operating",
+  "tickers": ["SYN.A", "SYNA"],
+  "exchanges": ["NYSE", "Nasdaq"],
+  "filings": {
+    "recent": {
+      "accessionNumber": ["0000000001-26-000001", "0000000001-26-000002"],
+      "filingDate": ["2026-02-15", "2026-05-02"],
+      "reportDate": ["2025-12-31", "2026-03-31"],
+      "acceptanceDateTime": [
+        "2026-02-15T15:30:00Z",
+        "2026-05-02T16:45:00Z"
+      ],
+      "form": ["10-K", "10-Q"],
+      "fileNumber": ["001-00001", "001-00001"],
+      "primaryDocument": ["synthetic-alpha-2025.htm", "synthetic-alpha-2026q1.htm"],
+      "primaryDocDescription": ["Synthetic annual report", "Synthetic quarterly report"]
+    },
+    "files": [
+      {
+        "name": "CIK0000000001-submissions-001.json",
+        "filingCount": 2,
+        "filingFrom": "2024-01-01",
+        "filingTo": "2024-12-31"
+      }
+    ]
+  }
+}

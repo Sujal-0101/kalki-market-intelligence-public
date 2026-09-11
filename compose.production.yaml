@@ -1,0 +1,485 @@
+name: kalki-production
+
+x-app-environment: &app_environment
+  KALKI_ENVIRONMENT: production
+  KALKI_CONTAINERIZED: "true"
+  KALKI_DATABASE_ENABLED: "true"
+  KALKI_DATABASE_HOST: postgres
+  KALKI_DATABASE_PORT: "5432"
+  KALKI_DATABASE_NAME: kalki
+  KALKI_DATABASE_USER: kalki_app
+  KALKI_DATABASE_PASSWORD_FILE: /run/secrets/postgres_app_password
+  KALKI_WEB_REQUEST_LIMIT: "120"
+  KALKI_WEB_REQUEST_WINDOW_SECONDS: "60"
+  # SEC fair-access identity is sourced from the ignored host .env at compose
+  # interpolation time; it is never written to images or application logs.
+  KALKI_SEC_USER_AGENT: "${KALKI_SEC_USER_AGENT:?KALKI_SEC_USER_AGENT must be configured in ignored .env}"
+
+services:
+  postgres:
+    image: postgres:18.0-alpine3.22@sha256:48c8ad3a7284b82be4482a52076d47d879fd6fb084a1cbfccbd551f9331b0e40
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kalki
+      POSTGRES_USER: kalki_owner
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_owner_password
+      POSTGRES_INITDB_ARGS: --data-checksums
+    secrets:
+      - postgres_owner_password
+      - postgres_app_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/0001_prediction_outcomes.sql:/docker-entrypoint-initdb.d/010-prediction-outcomes.sql:ro
+      - ./migrations/0002_web_operations.sql:/docker-entrypoint-initdb.d/020-web-operations.sql:ro
+      - ./migrations/0003_publication_list_index.sql:/docker-entrypoint-initdb.d/025-publication-list-index.sql:ro
+      - ./migrations/0004_live_research_radar.sql:/docker-entrypoint-initdb.d/028-live-research-radar.sql:ro
+      - ./migrations/0005_hierarchical_verifier.sql:/docker-entrypoint-initdb.d/029-hierarchical-verifier.sql:ro
+      - ./migrations/0006_tier0_decisions.sql:/docker-entrypoint-initdb.d/0295-tier0-decisions.sql:ro
+      - ./migrations/0007_human_research_leads.sql:/docker-entrypoint-initdb.d/031-human-research-leads.sql:ro
+      - ./migrations/0008_human_research_feedback.sql:/docker-entrypoint-initdb.d/032-human-research-feedback.sql:ro
+      - ./migrations/0009_human_research_results.sql:/docker-entrypoint-initdb.d/033-human-research-results.sql:ro
+      - ./migrations/0010_analyst_attempt_receipts.sql:/docker-entrypoint-initdb.d/034-analyst-attempt-receipts.sql:ro
+      - ./migrations/0011_funnel_telemetry.sql:/docker-entrypoint-initdb.d/035-funnel-telemetry.sql:ro
+      - ./migrations/0012_human_result_provenance.sql:/docker-entrypoint-initdb.d/036-human-result-provenance.sql:ro
+      - ./migrations/0013_autonomous_screening_decisions.sql:/docker-entrypoint-initdb.d/037-autonomous-screening-decisions.sql:ro
+      - ./migrations/0014_prospective_outcomes.sql:/docker-entrypoint-initdb.d/038-prospective-outcomes.sql:ro
+      - ./migrations/0015_ownership_intelligence.sql:/docker-entrypoint-initdb.d/039-ownership-intelligence.sql:ro
+      - ./migrations/0016_ownership_index_identity.sql:/docker-entrypoint-initdb.d/040-ownership-index-identity.sql:ro
+      - ./migrations/0017_financing_intelligence.sql:/docker-entrypoint-initdb.d/041-financing-intelligence.sql:ro
+      - ./migrations/0018_event_novelty_lineage.sql:/docker-entrypoint-initdb.d/042-event-novelty-lineage.sql:ro
+      - ./migrations/0019_focus_universe.sql:/docker-entrypoint-initdb.d/043-focus-universe.sql:ro
+      - ./migrations/0020_validated_sec_links.sql:/docker-entrypoint-initdb.d/044-validated-sec-links.sql:ro
+      - ./migrations/0021_engineering_measurements.sql:/docker-entrypoint-initdb.d/045-engineering-measurements.sql:ro
+      - ./migrations/0022_accounting_compliance.sql:/docker-entrypoint-initdb.d/046-accounting-compliance.sql:ro
+      - ./migrations/0023_sec_complete_submission_paths.sql:/docker-entrypoint-initdb.d/047-sec-complete-submission-paths.sql:ro
+      - ./migrations/0024_stale_analyst_attempt_recovery.sql:/docker-entrypoint-initdb.d/048-stale-analyst-attempt-recovery.sql:ro
+      - ./migrations/0025_filing_change_lifecycle.sql:/docker-entrypoint-initdb.d/049-filing-change-lifecycle.sql:ro
+      - ./migrations/0026_contradiction_receipts.sql:/docker-entrypoint-initdb.d/050-contradiction-receipts.sql:ro
+      - ./migrations/0027_outcome_science_invariants.sql:/docker-entrypoint-initdb.d/051-outcome-science-invariants.sql:ro
+      - ./deploy/postgres/initdb/030-configure-app-role.sh:/docker-entrypoint-initdb.d/030-configure-app-role.sh:ro
+    networks:
+      - database
+      - research_egress
+    healthcheck:
+      test: [CMD-SHELL, pg_isready --username kalki_owner --dbname kalki]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    mem_limit: 768m
+    cpus: 1.5
+
+  admin:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-serve-admin]
+    environment:
+      <<: *app_environment
+      KALKI_WEB_ENABLED: "true"
+      KALKI_WEB_HOST: 0.0.0.0
+      KALKI_WEB_PORT: "8000"
+      KALKI_WEB_SECURE_COOKIES: "false"
+      KALKI_ADMIN_USERNAME: admin
+      KALKI_ADMIN_PASSWORD_HASH_FILE: /run/secrets/admin_password_hash
+    secrets:
+      - postgres_app_password
+      - admin_password_hash
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - admin
+    ports:
+      - 127.0.0.1:8000:8000
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 384m
+    cpus: 1.0
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  public:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-serve-public]
+    environment:
+      <<: *app_environment
+      KALKI_WEB_PUBLIC_ENABLED: "true"
+      KALKI_WEB_PUBLIC_HOST: 0.0.0.0
+      KALKI_WEB_PUBLIC_PORT: "8001"
+      KALKI_WEB_PUBLIC_HOSTNAME: "${KALKI_WEB_PUBLIC_HOSTNAME:-localhost}"
+    secrets:
+      - postgres_app_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - public_connector
+    ports:
+      - 127.0.0.1:8001:8001
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 384m
+    cpus: 1.0
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/research', timeout=2).read()
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  ollama:
+    image: python:3.14.4-slim-bookworm@sha256:fc74d22ffd0d5ac395a4b7bdda75a4539758862c49ebf3005647084631e63789
+    restart: unless-stopped
+    user: "${KALKI_HOST_UID:-1000}:${KALKI_HOST_GID:-1000}"
+    command: [/usr/local/bin/ollama, serve]
+    environment:
+      HOME: /home/ollama
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_LIBRARY_PATH: /usr/local/lib/ollama
+      OLLAMA_NO_CLOUD: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_VULKAN: "0"
+      CUDA_VISIBLE_DEVICES: "-1"
+    volumes:
+      - ${KALKI_OLLAMA_BIN:-/usr/local/bin/ollama}:/usr/local/bin/ollama:ro
+      - ${KALKI_OLLAMA_LIB:-/usr/local/lib/ollama}:/usr/local/lib/ollama:ro
+      - ${KALKI_OLLAMA_HOME:-/usr/share/ollama/.ollama}:/home/ollama/.ollama
+    networks:
+      - analyst
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    # Gemma 4 12B Q4_K_M is loaded only after Qwen is explicitly released. The
+    # equal memory/swap limits prohibit Ollama from using swap while retaining
+    # roughly 8 GiB of host headroom for the OS, PostgreSQL, and public services.
+    mem_limit: 14g
+    memswap_limit: 14g
+    # Gemma remains disabled. Qwen's fixed-fixture and live production gates need
+    # the measured six-logical-CPU ceiling; lower ceilings caused bounded calls to
+    # reach their timeout. If Gemma is ever explicitly re-enabled, its separate
+    # two-CPU qualification envelope must be restored and revalidated first.
+    # OLLAMA_NUM_PARALLEL=1 still permits only one model request at a time.
+    cpus: 6.0
+    healthcheck:
+      test: [CMD, /usr/local/bin/ollama, list]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  worker:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-research-worker]
+    environment:
+      <<: *app_environment
+      KALKI_WORKER_ENABLED: "true"
+      KALKI_WORKER_POLL_SECONDS: "900"
+      KALKI_WORKER_BATCH_SIZE: "2"
+      KALKI_WORKER_MODEL: qwen3:4b
+      KALKI_WORKER_MODEL_DIGEST: 359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7
+      # Remains false until the focused verifier qualification gate passes.
+      KALKI_WORKER_VERIFIER_ENABLED: "false"
+      KALKI_WORKER_VERIFIER_MODEL: gemma4:12b-it-q4_K_M
+      KALKI_WORKER_VERIFIER_MODEL_DIGEST: 4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c
+      KALKI_OLLAMA_BASE_URL: http://ollama:11434
+      KALKI_LOCAL_SETTINGS_FILE: /run/secrets/local_environment
+      KALKI_DISCORD_INTAKE_ENABLED: "false"
+      KALKI_DISCORD_INTAKE_BOT_TOKEN_FILE: /run/secrets/discord_intake_bot_token
+      KALKI_DISCORD_INTAKE_CHANNEL_ID: "${KALKI_DISCORD_INTAKE_CHANNEL_ID:-}"
+      KALKI_DISCORD_INTAKE_RESULTS_CHANNEL_ID: "${KALKI_DISCORD_INTAKE_RESULTS_CHANNEL_ID:-}"
+      KALKI_DISCORD_INTAKE_ALLOWLIST: "${KALKI_DISCORD_INTAKE_ALLOWLIST:-[]}"
+    secrets:
+      - postgres_app_password
+      - local_environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    networks:
+      - database
+      - analyst
+      - research_egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  ownership-worker:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-ownership-worker]
+    environment:
+      <<: *app_environment
+      KALKI_OWNERSHIP_WORKER_ENABLED: "true"
+      KALKI_OWNERSHIP_WORKER_POLL_SECONDS: "900"
+      KALKI_OWNERSHIP_WORKER_BATCH_SIZE: "2"
+      KALKI_OWNERSHIP_WORKER_MAXIMUM_BACKLOG: "250"
+    secrets:
+      - postgres_app_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - research_egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 75
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  financing-worker:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-financing-worker]
+    environment:
+      <<: *app_environment
+      KALKI_FINANCING_WORKER_ENABLED: "true"
+      KALKI_FINANCING_WORKER_POLL_SECONDS: "900"
+      KALKI_FINANCING_WORKER_BATCH_SIZE: "2"
+      KALKI_FINANCING_WORKER_MAXIMUM_BACKLOG: "250"
+    secrets:
+      - postgres_app_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - research_egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 75
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  accounting-worker:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-accounting-worker]
+    environment:
+      <<: *app_environment
+      KALKI_ACCOUNTING_WORKER_ENABLED: "true"
+      KALKI_ACCOUNTING_WORKER_POLL_SECONDS: "900"
+      KALKI_ACCOUNTING_WORKER_BATCH_SIZE: "2"
+      KALKI_ACCOUNTING_WORKER_MAXIMUM_BACKLOG: "250"
+    secrets:
+      - postgres_app_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - research_egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 75
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  prospective-outcomes:
+    profiles: [supporting-outcomes]
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: [kalki-prospective-outcome-worker]
+    environment:
+      KALKI_ENVIRONMENT: production
+      KALKI_CONTAINERIZED: "true"
+      KALKI_DATABASE_ENABLED: "true"
+      KALKI_DATABASE_HOST: postgres
+      KALKI_DATABASE_PORT: "5432"
+      KALKI_DATABASE_NAME: kalki
+      KALKI_DATABASE_USER: kalki_app
+      KALKI_DATABASE_PASSWORD_FILE: /run/secrets/postgres_app_password
+      KALKI_PROSPECTIVE_OUTCOMES_ENABLED: "true"
+      KALKI_PROSPECTIVE_OUTCOMES_POLL_SECONDS: "3600"
+      KALKI_PROSPECTIVE_OUTCOMES_BATCH_SIZE: "8"
+      KALKI_TWELVE_DATA_API_KEY_FILE: /run/secrets/twelve_data_api_key
+    secrets:
+      - postgres_app_password
+      - twelve_data_api_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - research_egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 50
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  discord-intake:
+    image: kalki-market-intelligence:${KALKI_IMAGE_TAG:-phase16-local}
+    profiles: [discord]
+    command: [kalki-discord-intake]
+    restart: unless-stopped
+    # The ignored host secret files are owned by the local deployment account.
+    # UID/GID 1000 keeps them readable without granting root inside the container.
+    user: "1000:1000"
+    environment:
+      <<: *app_environment
+      KALKI_DISCORD_INTAKE_ENABLED: "true"
+      KALKI_DISCORD_INTAKE_BOT_TOKEN_FILE: /run/secrets/discord_intake_bot_token
+      KALKI_DISCORD_INTAKE_CHANNEL_ID: "${KALKI_DISCORD_INTAKE_CHANNEL_ID:-}"
+      KALKI_DISCORD_INTAKE_RESULTS_CHANNEL_ID: "${KALKI_DISCORD_INTAKE_RESULTS_CHANNEL_ID:-}"
+      KALKI_DISCORD_INTAKE_ALLOWLIST: "${KALKI_DISCORD_INTAKE_ALLOWLIST:-[]}"
+      KALKI_LOCAL_SETTINGS_FILE: /run/secrets/local_environment
+    secrets:
+      - postgres_app_password
+      - local_environment
+      - discord_intake_bot_token
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+      - research_egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 50
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  database:
+    internal: true
+  admin:
+  public_connector:
+    name: ${KALKI_PUBLIC_CONNECTOR_NETWORK:-kalki_public_connector}
+  analyst:
+    internal: true
+  research_egress:
+
+volumes:
+  postgres_data:
+
+secrets:
+  postgres_owner_password:
+    file: ./secrets/postgres_owner_password
+  postgres_app_password:
+    file: ./secrets/postgres_app_password
+  admin_password_hash:
+    file: ./secrets/admin_password_hash
+  local_environment:
+    file: ./.env
+  discord_intake_bot_token:
+    file: ./secrets/discord_intake_bot_token
+  twelve_data_api_key:
+    file: ./secrets/twelve_data_api_key

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "description": "Wholly synthetic Phase 9 return case; not market evidence or a performance claim.",
+  "asset_start": "10",
+  "asset_end": "12",
+  "asset_cash_distribution": "0.5",
+  "benchmark_start": "20",
+  "benchmark_end": "21",
+  "benchmark_cash_distribution": "0.2",
+  "expected_asset_total_return": "0.25",
+  "expected_benchmark_total_return": "0.06",
+  "expected_benchmark_relative_return": "0.19"
+}

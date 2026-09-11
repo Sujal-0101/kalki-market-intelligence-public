@@ -1,0 +1,21 @@
+title = "Kalki public-source secret scanning"
+minVersion = "v8.25.0"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Explicitly synthetic Discord snowflakes used by closed validation tests"
+targetRules = ["discord-client-id"]
+regexTarget = "line"
+regexes = [
+  '''(?:111111111111111111|222222222222222222|12345678901234567[89]|[2-5]23456789012345678|987654321098765432)''',
+]
+
+[[allowlists]]
+description = "Cache test variable name that is not a credential"
+targetRules = ["generic-api-key"]
+regexTarget = "line"
+regexes = [
+  '''key, knowledge_cutoff_at=NOW \+ timedelta''',
+]

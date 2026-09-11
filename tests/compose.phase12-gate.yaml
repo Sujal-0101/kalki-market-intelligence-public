@@ -1,0 +1,10 @@
+services:
+  postgres:
+    networks:
+      - database
+      - gate
+    ports:
+      - 127.0.0.1:55439:5432
+
+networks:
+  gate:

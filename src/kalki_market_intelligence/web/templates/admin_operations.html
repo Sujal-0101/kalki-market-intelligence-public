@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Mission Control · Kalki{% endblock %}
+{% block content %}
+<section class="admin-header">
+  <div><p class="eyebrow">Private operations</p><h1>Mission Control</h1><p>Truthful local status for the evidence pipeline. This view is not exposed on the public research hostname.</p></div>
+  <a class="back-link" href="/admin">← Admin workspace</a>
+</section>
+<section class="operations-status" aria-labelledby="operations-status-title">
+  <p class="eyebrow">System status</p><h2 id="operations-status-title" class="status-{{ snapshot.overall.value }}">{{ snapshot.overall.value|upper }}</h2>
+  <p>Worker <strong>{{ snapshot.worker.value|upper }}</strong> · state {{ snapshot.worker_state }} · publications {{ snapshot.public_count }} · pending {{ snapshot.pending_count }}</p>
+  {% if snapshot.notes %}<ul>{% for note in snapshot.notes %}<li>{{ note }}</li>{% endfor %}</ul>{% endif %}
+</section>
+<section aria-labelledby="worker-status-title"><h2 id="worker-status-title">Worker pulse</h2><dl class="operations-grid"><div><dt>Heartbeat</dt><dd>{{ snapshot.worker_heartbeat or "UNAVAILABLE" }}</dd></div><div><dt>Last success</dt><dd>{{ snapshot.last_success or "UNAVAILABLE" }}</dd></div><div><dt>State</dt><dd>{{ snapshot.worker_state }}</dd></div></dl></section>
+{% if snapshot.funnel %}
+<section class="operations-section" aria-labelledby="funnel-current-title">
+  <p class="eyebrow">Application state · observed {{ snapshot.funnel.observed_at }}</p><h2 id="funnel-current-title">Current funnel and backlog</h2>
+  <dl class="operations-grid"><div><dt>Pending</dt><dd>{{ snapshot.funnel.current.pending }}</dd></div><div><dt>Processing</dt><dd>{{ snapshot.funnel.current.processing }}</dd></div><div><dt>Retry wait</dt><dd>{{ snapshot.funnel.current.retry_wait }}</dd></div><div><dt>Skipped</dt><dd>{{ snapshot.funnel.current.skipped }}</dd></div><div><dt>Retained</dt><dd>{{ snapshot.funnel.current.retained }}</dd></div><div><dt>Escalated</dt><dd>{{ snapshot.funnel.current.escalated }}</dd></div><div><dt>Published</dt><dd>{{ snapshot.funnel.current.published }}</dd></div><div><dt>Quarantined</dt><dd>{{ snapshot.funnel.current.quarantined }}</dd></div><div><dt>Failed</dt><dd>{{ snapshot.funnel.current.failed }}</dd></div><div><dt>Active backlog</dt><dd>{{ snapshot.funnel.current.backlog_depth }}</dd></div><div><dt>Oldest backlog · seconds</dt><dd>{{ "%.0f"|format(snapshot.funnel.current.oldest_backlog_seconds) if snapshot.funnel.current.oldest_backlog_seconds is not none else "UNAVAILABLE" }}</dd></div></dl>
+</section>
+<section class="operations-section" aria-labelledby="funnel-window-title">
+  <p class="eyebrow">Telemetry began {{ snapshot.funnel.telemetry_started_at }}</p><h2 id="funnel-window-title">24h / 48h / 7d application windows</h2>
+  {% for window in snapshot.funnel.windows %}
+  <article class="operations-window">
+    <h3>{{ window.hours }} hours <span class="coverage-{{ 'complete' if window.telemetry_complete else 'partial' }}">{{ "COMPLETE" if window.telemetry_complete else "PARTIAL TELEMETRY" }}</span></h3>
+    <dl class="operations-grid"><div><dt>SEC polls attempted</dt><dd>{{ window.sec_polls_attempted }}</dd></div><div><dt>Unterminated polls</dt><dd>{{ window.unterminated_sec_polls }}</dd></div><div><dt>Completed / degraded / failed</dt><dd>{{ window.completed_sec_polls }} / {{ window.degraded_sec_polls }} / {{ window.failed_sec_polls }}</dd></div><div><dt>Discovered rows / unique</dt><dd>{{ window.discovered_rows }} / {{ window.unique_candidates }}</dd></div><div><dt>Processing transitions</dt><dd>{{ window.processing_transitions }}</dd></div><div><dt>Retry wait / failed</dt><dd>{{ window.retry_wait_transitions }} / {{ window.failed_transitions }}</dd></div><div><dt>Skipped</dt><dd>{{ window.skipped_transitions }}</dd></div><div><dt>Retained / escalated</dt><dd>{{ window.retained_transitions }} / {{ window.escalated_transitions }}</dd></div><div><dt>Retrieved / parsed / normalized</dt><dd>{{ window.retrieved }} / {{ window.parsed }} / {{ window.normalized }}</dd></div><div><dt>Stale recoveries</dt><dd>{{ window.stale_recoveries }}</dd></div><div><dt>Analyst invocations / Qwen attempts</dt><dd>{{ window.analyst_invocations }} / {{ window.qwen_attempts }}</dd></div><div><dt>Valid / invalid / runtime</dt><dd>{{ window.valid_contracts }} / {{ window.invalid_contracts }} / {{ window.runtime_failures }}</dd></div><div><dt>Timeouts</dt><dd>{{ window.timeouts }}</dd></div><div><dt>Format retries / successes</dt><dd>{{ window.pipeline_retry_attempts }} / {{ window.pipeline_retry_successes }}</dd></div><div><dt>Work retries / successes</dt><dd>{{ window.work_item_retry_attempts }} / {{ window.work_item_retry_successes }}</dd></div><div><dt>Latency sample</dt><dd>{{ window.latency_sample_size }} · {{ window.latency_sample_label }}</dd></div><div><dt>Latency min / p50 / p95 / max · ms</dt><dd>{% if window.latency_sample_size %}{{ window.latency_minimum_ms }} / {{ "%.1f"|format(window.latency_p50_ms) }} / {{ "%.1f"|format(window.latency_p95_ms) }} / {{ window.latency_maximum_ms }}{% else %}UNAVAILABLE{% endif %}</dd></div><div><dt>Verifier accepted / rejected</dt><dd>{{ window.verifier_accepted }} / {{ window.verifier_rejected }}</dd></div><div><dt>Quarantined / published</dt><dd>{{ window.quarantined }} / {{ window.published }}</dd></div><div><dt>Discord sent / duplicate</dt><dd>{{ window.discord_sent }} / {{ window.discord_duplicates }}</dd></div><div><dt>Human leads / results</dt><dd>{{ window.human_leads }} / {{ window.human_results }}</dd></div><div><dt>Human delivered / failed / duplicate</dt><dd>{{ window.human_delivered }} / {{ window.human_delivery_failed }} / {{ window.human_duplicates }}</dd></div></dl>
+    <h4>Bounded failure categories</h4>
+    {% if window.failure_categories %}<ul class="metric-list">{% for item in window.failure_categories %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None measured.</p>{% endif %}
+    <h4>Deterministic detector receipts</h4>
+    <div class="operations-table-wrap"><table class="operations-table"><thead><tr><th>Detector</th><th>Invoked</th><th>Positive</th><th>Negative</th><th>Unknown</th><th>Not assessed</th><th>Insufficient</th><th>Escalation contribution</th></tr></thead><tbody>{% for detector in window.detectors %}<tr><th>{{ detector.name }}</th><td>{{ detector.invoked }}</td><td>{{ detector.positive }}</td><td>{{ detector.negative }}</td><td>{{ detector.unknown }}</td><td>{{ detector.not_assessed }}</td><td>{{ detector.insufficient_evidence }}</td><td>{{ detector.escalation_contributions }}</td></tr>{% endfor %}</tbody></table></div>
+  </article>
+  {% endfor %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Application funnel</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if screening %}
+<section class="operations-section" aria-labelledby="screening-reconciliation-title">
+  <p class="eyebrow">Terminal telemetry began {{ screening.telemetry_started_at }}</p><h2 id="screening-reconciliation-title">Autonomous screening reconciliation</h2>
+  <dl class="operations-grid"><div><dt>Current retry wait</dt><dd>{{ screening.retry_wait }}</dd></div><div><dt>Published candidates</dt><dd>{{ screening.published }}</dd></div><div><dt>Quarantined candidates</dt><dd>{{ screening.quarantined }}</dd></div><div><dt>Failed candidates</dt><dd>{{ screening.failed }}</dd></div><div><dt>Legacy terminal reason unavailable</dt><dd>{{ screening.legacy_terminal_without_decision }}</dd></div><div><dt>Discord sent exactly once</dt><dd>{{ screening.discord_sent }}</dd></div><div><dt>Discord duplicates</dt><dd>{{ screening.discord_duplicates }}</dd></div></dl>
+  {% for window in screening.windows %}<article class="operations-window"><h3>{{ window.hours }} hours <span class="coverage-{{ 'complete' if window.telemetry_complete else 'partial' }}">{{ "COMPLETE" if window.telemetry_complete else "PARTIAL TELEMETRY" }}</span></h3><dl class="operations-grid"><div><dt>Qualified</dt><dd>{{ window.qualified }}</dd></div><div><dt>Screened out</dt><dd>{{ window.screened_out }}</dd></div><div><dt>Analysis incomplete</dt><dd>{{ window.analysis_incomplete }}</dd></div></dl><h4>Terminal reasons</h4>{% if window.reasons %}<ul class="metric-list">{% for item in window.reasons %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None measured.</p>{% endif %}</article>{% endfor %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Autonomous screening reconciliation</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if ownership %}
+<section class="operations-section" aria-labelledby="ownership-title">
+  <p class="eyebrow">Ownership telemetry began {{ ownership.telemetry_started_at }}</p><h2 id="ownership-title">Insider and ownership processing</h2>
+  <dl class="operations-grid"><div><dt>Pending</dt><dd>{{ ownership.pending }}</dd></div><div><dt>Processing</dt><dd>{{ ownership.processing }}</dd></div><div><dt>Retry wait</dt><dd>{{ ownership.retry_wait }}</dd></div><div><dt>Completed</dt><dd>{{ ownership.completed }}</dd></div><div><dt>Failed</dt><dd>{{ ownership.failed }}</dd></div><div><dt>Immutable receipts</dt><dd>{{ ownership.receipt_count }}</dd></div><div><dt>Model-free retained</dt><dd>{{ ownership.model_free_retained }}</dd></div><div><dt>Escalated for bounded review</dt><dd>{{ ownership.escalated_for_review }}</dd></div><div><dt>Oldest active backlog · seconds</dt><dd>{{ "%.0f"|format(ownership.oldest_backlog_seconds) if ownership.oldest_backlog_seconds is not none else "UNAVAILABLE" }}</dd></div></dl>
+  <h3>Primary SEC forms</h3>{% if ownership.forms %}<ul class="metric-list">{% for item in ownership.forms %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>No retained ownership receipt yet.</p>{% endif %}
+  <h3>Closed failure categories</h3>{% if ownership.failure_categories %}<ul class="metric-list">{% for item in ownership.failure_categories %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None measured.</p>{% endif %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Insider and ownership processing</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if financing %}
+<section class="operations-section" aria-labelledby="financing-title">
+  <p class="eyebrow">Financing telemetry began {{ financing.telemetry_started_at }}</p><h2 id="financing-title">Financing and dilution processing</h2>
+  <dl class="operations-grid"><div><dt>Pending</dt><dd>{{ financing.pending }}</dd></div><div><dt>Processing</dt><dd>{{ financing.processing }}</dd></div><div><dt>Retry wait</dt><dd>{{ financing.retry_wait }}</dd></div><div><dt>Retained</dt><dd>{{ financing.completed }}</dd></div><div><dt>No exact supported terms</dt><dd>{{ financing.no_terms }}</dd></div><div><dt>Failed</dt><dd>{{ financing.failed }}</dd></div><div><dt>Immutable receipts</dt><dd>{{ financing.receipt_count }}</dd></div><div><dt>Model-free retained</dt><dd>{{ financing.model_free_retained }}</dd></div><div><dt>Oldest active backlog · seconds</dt><dd>{{ "%.0f"|format(financing.oldest_backlog_seconds) if financing.oldest_backlog_seconds is not none else "UNAVAILABLE" }}</dd></div></dl>
+  <h3>Primary SEC forms</h3>{% if financing.forms %}<ul class="metric-list">{% for item in financing.forms %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>No retained financing receipt yet.</p>{% endif %}
+  <h3>Closed financing contexts</h3>{% if financing.contexts %}<ul class="metric-list">{% for item in financing.contexts %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None retained.</p>{% endif %}
+  <h3>Closed failure categories</h3>{% if financing.failure_categories %}<ul class="metric-list">{% for item in financing.failure_categories %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None measured.</p>{% endif %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Financing and dilution processing</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if accounting %}
+<section class="operations-section" aria-labelledby="accounting-title">
+  <p class="eyebrow">Accounting telemetry began {{ accounting.telemetry_started_at }}</p><h2 id="accounting-title">Accounting, auditor and compliance processing</h2>
+  <dl class="operations-grid"><div><dt>Pending</dt><dd>{{ accounting.pending }}</dd></div><div><dt>Processing</dt><dd>{{ accounting.processing }}</dd></div><div><dt>Retry wait</dt><dd>{{ accounting.retry_wait }}</dd></div><div><dt>Retained</dt><dd>{{ accounting.completed }}</dd></div><div><dt>No exact supported events</dt><dd>{{ accounting.no_events }}</dd></div><div><dt>Failed</dt><dd>{{ accounting.failed }}</dd></div><div><dt>Immutable receipts</dt><dd>{{ accounting.receipt_count }}</dd></div><div><dt>Model-free retained</dt><dd>{{ accounting.model_free_retained }}</dd></div><div><dt>Oldest active backlog · seconds</dt><dd>{{ "%.0f"|format(accounting.oldest_backlog_seconds) if accounting.oldest_backlog_seconds is not none else "UNAVAILABLE" }}</dd></div></dl>
+  <h3>Primary SEC forms</h3>{% if accounting.forms %}<ul class="metric-list">{% for item in accounting.forms %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>No retained accounting receipt yet.</p>{% endif %}
+  <h3>Closed event types</h3>{% if accounting.event_types %}<ul class="metric-list">{% for item in accounting.event_types %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None retained.</p>{% endif %}
+  <h3>Point-in-time comparisons</h3>{% if accounting.comparisons %}<ul class="metric-list">{% for item in accounting.comparisons %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None retained.</p>{% endif %}
+  <h3>Closed failure categories</h3>{% if accounting.failure_categories %}<ul class="metric-list">{% for item in accounting.failure_categories %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>None measured.</p>{% endif %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Accounting, auditor and compliance processing</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if convergence %}
+<section class="operations-section" aria-labelledby="convergence-title">
+  <p class="eyebrow">Private aggregate · observed {{ convergence.observed_at }}</p><h2 id="convergence-title">Deterministic convergence receipts</h2>
+  <p>This projection contains counts only. It does not expose receipt content, issuer identity, evidence, values, or internal lineage.</p>
+  <dl class="operations-grid"><div><dt>Immutable receipts</dt><dd>{{ convergence.receipt_count }}</dd></div></dl>
+  <h3>Closed claim families</h3>{% if convergence.families %}<ul class="metric-list">{% for item in convergence.families %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>No eligible prospective receipt has been retained.</p>{% endif %}
+  <h3>Closed dispositions</h3>{% if convergence.dispositions %}<ul class="metric-list">{% for item in convergence.dispositions %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>No disposition has been observed.</p>{% endif %}
+  <h3>Closed producer sources</h3>{% if convergence.sources %}<ul class="metric-list">{% for item in convergence.sources %}<li><span>{{ item.name }}</span><strong>{{ item.count }}</strong></li>{% endfor %}</ul>{% else %}<p>No producer source has emitted a receipt.</p>{% endif %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Deterministic convergence receipts</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if outcome_science %}
+<section class="operations-section" aria-labelledby="outcome-science-title">
+  <p class="eyebrow">Private aggregate · observed {{ outcome_science.observed_at }}</p><h2 id="outcome-science-title">Prospective outcome science</h2>
+  <p>Descriptive supporting observations only. This is not a calibrated probability, market-alpha claim, or trading instruction. No publication, bar, provider response, or case identity is exposed here.</p>
+  <dl class="operations-grid"><div><dt>Protocol</dt><dd>{{ outcome_science.protocol_version }} · locked {{ outcome_science.protocol_locked_at }}</dd></div><div><dt>Report disposition</dt><dd>{{ outcome_science.disposition }}</dd></div><div><dt>Enrolled plans</dt><dd>{{ outcome_science.enrolled_plan_count }}</dd></div><div><dt>Terminal outcomes</dt><dd>{{ outcome_science.terminal_outcome_count }}</dd></div><div><dt>Not yet due</dt><dd>{{ outcome_science.not_yet_due_plan_count }}</dd></div><div><dt>Due without outcome</dt><dd>{{ outcome_science.due_without_outcome_count }}</dd></div><div><dt>Genuine forward / reconstructed</dt><dd>{{ outcome_science.genuine_forward_count }} / {{ outcome_science.reconstructed_count }}</dd></div><div><dt>Completed / unavailable</dt><dd>{{ outcome_science.completed_count }} / {{ outcome_science.unavailable_count }}</dd></div><div><dt>Favorable / adverse</dt><dd>{{ outcome_science.favorable_count }} / {{ outcome_science.adverse_count }}</dd></div><div><dt>Descriptive / power thresholds</dt><dd>{{ outcome_science.minimum_calibration_sample }} / {{ outcome_science.power_required_sample }} per homogeneous cohort</dd></div></dl>
+  {% if outcome_science.strata %}<div class="operations-table-wrap"><table class="operations-table"><thead><tr><th>Cohort</th><th>Horizon</th><th>Origin</th><th>Classification</th><th>Sample</th><th>Completed / unavailable</th><th>Favorable / adverse</th><th>Observed rate · 95% Wilson</th><th>Power</th><th>Disposition</th></tr></thead><tbody>{% for item in outcome_science.strata %}<tr><th><code>{{ item.cohort_sha256[:12] }}</code></th><td>T+{{ item.horizon }}</td><td>{{ item.origin }}</td><td>{{ item.classification }}</td><td>{{ item.sample_size }}</td><td>{{ item.completed_count }} / {{ item.unavailable_count }}</td><td>{{ item.favorable_count }} / {{ item.adverse_count }}</td><td>{% if item.observed_favorable_rate is not none %}{{ item.observed_favorable_rate }} · {{ item.wilson_lower }}–{{ item.wilson_upper }}{% else %}NOT ASSESSED{% endif %}</td><td>{{ item.power_sufficiency }}</td><td>{{ item.disposition }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>No supporting outcome exists. Sample size is zero; calibration and power are not assessed.</p>{% endif %}
+  {% if outcome_science.limitations %}<h3>Required limitations</h3><ul>{% for item in outcome_science.limitations %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Prospective outcome science</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+{% if engineering %}
+<section class="operations-section" aria-labelledby="engineering-measurements-title">
+  <p class="eyebrow">Private engineering telemetry began {{ engineering.telemetry_started_at }} · observed {{ engineering.observed_at }}</p><h2 id="engineering-measurements-title">Freshness and performance measurements</h2>
+  <p>These are engineering-quality and operations measurements, not market-alpha or investment-performance claims.</p>
+  {% for window in engineering.windows %}
+  <article class="operations-window">
+    <h3>{{ window.hours }} hours</h3>
+    {% if window.measurements %}<div class="operations-table-wrap"><table class="operations-table"><thead><tr><th>Metric</th><th>Coverage</th><th>Samples</th><th>Measured value</th></tr></thead><tbody>{% for item in window.measurements %}<tr><th>{{ item.metric_name.value }}</th><td>{{ item.availability.value }}{% if item.coverage_started_at %} since {{ item.coverage_started_at }}{% endif %}</td><td>{{ item.sample_count }}</td><td>{% if item.unavailable_reason %}UNAVAILABLE · {{ item.unavailable_reason.value }}{% elif item.numerator is not none %}{{ item.numerator }} / {{ item.denominator }} · {{ item.scaled_value_millionths }} millionths{% elif item.minimum_value is not none %}min {{ item.minimum_value }} · p50 {{ item.p50_value }} · p90 {{ item.p90_value }} · p95 {{ item.p95_value }} · max {{ item.maximum_value }}{% else %}{{ item.gauge_value }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>No retained window receipt yet.</p>{% endif %}
+  </article>
+  {% endfor %}
+  <h3>Instantaneous queue and host gauges</h3>
+  {% if engineering.gauges %}<div class="operations-table-wrap"><table class="operations-table"><thead><tr><th>Metric</th><th>Availability</th><th>Value</th></tr></thead><tbody>{% for item in engineering.gauges %}<tr><th>{{ item.metric_name.value }}</th><td>{{ item.availability.value }}</td><td>{% if item.unavailable_reason %}UNAVAILABLE · {{ item.unavailable_reason.value }}{% else %}{{ item.gauge_value }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>No retained gauge receipt yet.</p>{% endif %}
+</section>
+{% else %}
+<section class="operations-section"><h2>Freshness and performance measurements</h2><p>UNAVAILABLE</p></section>
+{% endif %}
+<section aria-labelledby="resource-status-title"><h2 id="resource-status-title">Host envelope</h2><dl class="operations-grid"><div><dt>Load · 1 minute</dt><dd>{{ "%.2f"|format(snapshot.resources.load_1m) if snapshot.resources.load_1m is not none else "UNAVAILABLE" }}</dd></div><div><dt>Memory available</dt><dd>{{ snapshot.resources.memory_available_bytes or "UNAVAILABLE" }}</dd></div><div><dt>Swap used</dt><dd>{{ snapshot.resources.swap_used_bytes or "UNAVAILABLE" }}</dd></div><div><dt>Disk free</dt><dd>{{ snapshot.resources.disk_free_bytes or "UNAVAILABLE" }}</dd></div><div><dt>Temperature</dt><dd>{{ snapshot.resources.temperature_celsius or "UNAVAILABLE" }}</dd></div><div><dt>GPU</dt><dd>{{ snapshot.resources.gpu_status }}</dd></div></dl></section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Admin sign in · Kalki{% endblock %}
+{% block content %}
+<section class="auth-shell" aria-labelledby="login-title">
+  <div>
+    <p class="eyebrow">Protected local workspace</p>
+    <h1 id="login-title">Administrator sign in</h1>
+    <p>One configured local account. Sessions expire and all access attempts are audited.</p>
+  </div>
+  <form method="post" action="/admin/login" class="auth-form">
+    {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+    <input type="hidden" name="login_csrf" value="{{ login_csrf }}">
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" autocomplete="username" required maxlength="64">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024">
+    <button type="submit">Sign in</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1",
+  "description": "Wholly synthetic exact-value cases for deterministic calculation tests; not market evidence.",
+  "decimal_tolerance": "1e-24",
+  "linear_closes": ["1", "2", "3", "4", "5", "6"],
+  "sma_period_3": ["2", "3", "4", "5"],
+  "ema_period_3": ["2", "3", "4", "5"],
+  "rsi_period_3": ["100", "100", "100"],
+  "macd_2_3_2": [
+    {"line": "0.5", "signal": "0.5", "histogram": "0"},
+    {"line": "0.5", "signal": "0.5", "histogram": "0"},
+    {"line": "0.5", "signal": "0.5", "histogram": "0"}
+  ],
+  "atr": {
+    "highs": ["10", "11", "12", "13", "14"],
+    "lows": ["8", "9", "10", "11", "12"],
+    "closes": ["9", "10", "11", "12", "13"],
+    "period": 3,
+    "expected": ["2", "2"]
+  },
+  "volatility": {
+    "closes": ["100", "110", "132", "171.6"],
+    "periods_per_year": 100,
+    "expected": "1.0"
+  },
+  "relative_volume": {
+    "volumes": [100, 200, 300],
+    "comparison_period": 2,
+    "expected": "2"
+  },
+  "range_position": {
+    "closes": ["10", "12", "14", "13"],
+    "expected": "0.75"
+  },
+  "maximum_drawdown": {
+    "closes": ["100", "120", "90", "100"],
+    "expected": "-0.25"
+  },
+  "benchmark": {
+    "benchmark_closes": ["100", "110", "132", "171.6"],
+    "asset_closes": ["100", "120", "168", "268.8"],
+    "beta": "2",
+    "relative_return": "0.972"
+  }
+}

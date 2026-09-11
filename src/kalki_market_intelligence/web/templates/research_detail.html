@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Research {{ publication.prediction_id }} · Kalki{% endblock %}
+{% block content %}
+<article class="detail-shell">
+  <a class="back-link" href="/research">← All research</a>
+  <header class="detail-header">
+    <p class="eyebrow">Published research · {{ publication.risk_profile.value|replace('_', ' ') }}</p>
+    <h1>Research subject {{ publication.research_subject_id }}</h1>
+    <p class="disclosure" role="note">{{ publication.disclaimer }}</p>
+  </header>
+  <section aria-labelledby="assessment-title">
+    <h2 id="assessment-title">Assessment</h2>
+    <div class="detail-grid">
+      <div class="panel"><span>Label</span><strong>{{ publication.label.value }}</strong></div>
+      <div class="panel"><span>Opportunity</span><strong>{{ publication.scores.opportunity_points }}/100</strong></div>
+      <div class="panel"><span>Risk</span><strong>{{ publication.scores.risk_points }}/100</strong></div>
+      <div class="panel"><span>Research support</span><strong>{{ publication.scores.research_confidence_points }}/100</strong><small>Ordinal, not probability</small></div>
+    </div>
+  </section>
+  <section aria-labelledby="thesis-title">
+    <h2 id="thesis-title">Published thesis</h2>
+    <p class="thesis">{{ publication.thesis }}</p>
+  </section>
+  <section aria-labelledby="evidence-title">
+    <h2 id="evidence-title">Evidence lineage</h2>
+    <div class="table-scroll" tabindex="0" aria-label="Scrollable evidence table">
+      <table>
+        <thead><tr><th scope="col">Evidence ID</th><th scope="col">Available UTC</th><th scope="col">Retrieved UTC</th><th scope="col">Content hash</th></tr></thead>
+        <tbody>
+          {% for evidence in publication.evidence %}
+          <tr><td><code>{{ evidence.evidence_id }}</code></td><td>{{ evidence.available_at.isoformat() }}</td><td>{{ evidence.retrieved_at.isoformat() }}</td><td><code>{{ evidence.content_sha256 }}</code></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="metadata" aria-labelledby="metadata-title">
+    <h2 id="metadata-title">Publication metadata</h2>
+    <dl>
+      <div><dt>Prediction ID</dt><dd><code>{{ publication.prediction_id }}</code></dd></div>
+      <div><dt>Published UTC</dt><dd>{{ publication.published_at.isoformat() }}</dd></div>
+      <div><dt>Evaluation due</dt><dd>{{ publication.evaluation_due_on.isoformat() }}</dd></div>
+      <div><dt>Ruleset</dt><dd>{{ publication.signal_ruleset_version }}</dd></div>
+      <div><dt>Signal fingerprint</dt><dd><code>{{ publication.signal_fingerprint }}</code></dd></div>
+    </dl>
+  </section>
+</article>
+{% endblock %}

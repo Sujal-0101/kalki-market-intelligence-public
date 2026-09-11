@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Published research · Kalki{% endblock %}
+{% block content %}
+<section class="hero" aria-labelledby="page-title">
+  <p class="eyebrow">Evidence-backed · Point-in-time · Research only</p>
+  <h1 id="page-title">Published research</h1>
+  <p class="lede">Filing dossiers and forecast records are distinct. Every row states which kind it is; heuristic support is never a probability.</p>
+</section>
+{% if publications %}
+<section class="card-grid" aria-label="Research publications">
+  {% for item in publications %}
+  <article class="research-card">
+    {% if item.record_type == "dossier" %}
+    <div class="card-heading">
+      <span class="label">Filing dossier</span>
+      <span class="risk">{{ item.classification.value }}</span>
+    </div>
+    <h2><a href="{{ item.canonical_url }}">{{ item.ticker or item.company_name }} · {{ item.filing_form }}</a></h2>
+    <dl class="score-grid">
+      <div><dt>Attention</dt><dd>{{ item.attention_points }}<span>/100</span></dd></div>
+      <div><dt>Risk</dt><dd>{{ item.risk_points }}<span>/100</span></dd></div>
+      <div><dt>Evidence</dt><dd>{{ item.evidence_strength_points }}<span>/100</span></dd></div>
+    </dl>
+    <p class="meta">Published <time datetime="{{ item.published_at.isoformat() }}">{{ item.published_at.date().isoformat() }}</time> · SEC filing evidence · {{ item.evidence_count }} evidence records</p>
+    {% else %}
+    <div class="card-heading">
+      <span class="label">Forecast record</span>
+      <span class="risk risk-{{ item.risk_profile.value }}">{{ item.risk_profile.value|replace('_', ' ') }}</span>
+    </div>
+    <h2><a href="{{ item.canonical_url }}">Research subject {{ item.research_subject_id }}</a></h2>
+    <dl class="score-grid">
+      <div><dt>Opportunity</dt><dd>{{ item.scores.opportunity_points }}<span>/100</span></dd></div>
+      <div><dt>Risk</dt><dd>{{ item.scores.risk_points }}<span>/100</span></dd></div>
+      <div><dt>Support</dt><dd>{{ item.scores.research_confidence_points }}<span>/100</span></dd></div>
+    </dl>
+    <p class="meta">Published <time datetime="{{ item.published_at.isoformat() }}">{{ item.published_at.date().isoformat() }}</time> · Explicit {{ item.horizon_days }}-day forecast · evaluation due {{ item.evaluation_due_on.isoformat() }}</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+{% else %}
+<section class="empty-state" aria-labelledby="empty-title">
+  <p class="eyebrow">No publications yet</p>
+  <h2 id="empty-title">The public research library is empty.</h2>
+  <p>Nothing is fabricated for display. Validated publications will appear here when they exist.</p>
+</section>
+{% endif %}
+{% if page > 1 or has_older %}
+<nav aria-label="Research pages">
+  {% if page > 1 %}<a href="/research?page={{ page - 1 }}">Newer research</a>{% endif %}
+  {% if has_older %}<a href="/research?page={{ page + 1 }}">Older research</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

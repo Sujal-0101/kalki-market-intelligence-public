@@ -1,0 +1,23 @@
+{
+  "_fixture_notice": "Synthetic schema fixture; not an SEC filing or real issuer.",
+  "cik": 2,
+  "name": "Synthetic Beta Holdings",
+  "sic": "2834",
+  "sicDescription": "Synthetic Pharmaceutical Preparations",
+  "entityType": "operating",
+  "tickers": ["SYNB"],
+  "exchanges": ["OTC"],
+  "filings": {
+    "recent": {
+      "accessionNumber": ["0000000002-26-000001"],
+      "filingDate": ["2026-03-20"],
+      "reportDate": [""],
+      "acceptanceDateTime": ["2026-03-20T13:00:00+00:00"],
+      "form": ["8-K"],
+      "fileNumber": [""],
+      "primaryDocument": ["synthetic-beta-event.htm"],
+      "primaryDocDescription": [""]
+    },
+    "files": []
+  }
+}
